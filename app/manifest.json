@@ -1,0 +1,21 @@
+{
+  "name": "Didi ki Rasoi - CSVTU Campus Mess",
+  "short_name": "Didi ki Rasoi",
+  "description": "Order delicious homestyle food from your classroom. Fresh, tasty, and delivered fast to CSVTU students.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f97316",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["food", "lifestyle", "education"],
+  "lang": "en-IN",
+  "scope": "/",
+  "prefer_related_applications": false
+}

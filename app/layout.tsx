@@ -5,16 +5,23 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Didi ki Rasoi - CSVTU Campus Mess',
-  description: 'Order delicious homestyle food from your classroom. Fresh, tasty, and delivered fast to CSVTU students.',
+  description: 'Order delicious homestyle food from your classroom. Fresh, tasty, and delivered fast to CSVTU students. Skip the queues with our online ordering system.',
   keywords: 'food delivery, campus mess, CSVTU, homestyle food, student meals, online ordering',
   authors: [{ name: 'Didi ki Rasoi' }],
   viewport: 'width=device-width, initial-scale=1',
   robots: 'index, follow',
+  themeColor: '#f97316',
   openGraph: {
     title: 'Didi ki Rasoi - CSVTU Campus Mess',
-    description: 'Order delicious homestyle food from your classroom. Fresh, tasty, and delivered fast.',
+    description: 'Order delicious homestyle food from your classroom. Fresh, tasty, and delivered fast to CSVTU students.',
     type: 'website',
     locale: 'en_IN',
+    siteName: 'Didi ki Rasoi',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Didi ki Rasoi - CSVTU Campus Mess',
+    description: 'Order delicious homestyle food from your classroom. Fresh, tasty, and delivered fast.',
   },
 }
 
