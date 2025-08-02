@@ -227,6 +227,32 @@ export default function DidiKiRasoiWebsite() {
     return cart.reduce((total, item) => total + item.quantity, 0)
   }
 
+  const handlePlaceOrder = () => {
+    if (cart.length === 0) return
+
+    // Create order summary
+    const orderSummary = cart
+      .map(
+        (item) =>
+          `${item.name}${item.selectedVariant ? ` (${item.selectedVariant.name})` : ""} x${item.quantity} - ₹${item.price * item.quantity}`,
+      )
+      .join("\n")
+
+    const totalAmount = getTotalPrice()
+    const phoneNumber = "7440683678"
+
+    // Create WhatsApp message
+    const message = `🍽️ *New Order from Didi ki Rasoi*\n\n${orderSummary}\n\n*Total: ₹${totalAmount}*\n\nPlease confirm my order. Thank you!`
+
+    // Open WhatsApp
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
+    window.open(whatsappUrl, "_blank")
+
+    // Clear cart after order
+    setCart([])
+    setIsCartOpen(false)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
       {/* Header */}
@@ -313,8 +339,11 @@ export default function DidiKiRasoiWebsite() {
                           <span>Total Amount:</span>
                           <span className="text-green-600">₹{getTotalPrice()}</span>
                         </div>
-                        <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold py-3 rounded-xl shadow-lg">
-                          Place Order 🍽️
+                        <Button
+                          onClick={handlePlaceOrder}
+                          className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold py-3 rounded-xl shadow-lg"
+                        >
+                          Place Order via WhatsApp 📱
                         </Button>
                       </div>
                     </>
