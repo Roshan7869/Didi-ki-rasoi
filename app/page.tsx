@@ -1,12 +1,14 @@
 "use client"
 
-import { useState } from "react"
-import { Search, ShoppingCart, Phone, MapPin, Clock, Plus, Minus, Star, Utensils, Coffee, Award } from "lucide-react"
+import { useState, useEffect, useMemo } from "react"
+import { Search, ShoppingCart, Phone, MapPin, Clock, Plus, Minus, Star, Utensils, Coffee, Award, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { toast } from "@/hooks/use-toast"
+import { Toaster } from "@/components/ui/toaster"
 
 interface MenuItem {
   id: string
@@ -18,6 +20,7 @@ interface MenuItem {
   variants?: { name: string; price: number }[]
   isPopular?: boolean
   rating?: number
+  isAvailable?: boolean
 }
 
 interface CartItem extends MenuItem {
@@ -33,8 +36,9 @@ const menuItems: MenuItem[] = [
     price: 10,
     category: "Drinks",
     description: "Fresh brewed aromatic black coffee",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=300",
     rating: 4.2,
+    isAvailable: true,
   },
   {
     id: "milk-coffee",
@@ -42,9 +46,10 @@ const menuItems: MenuItem[] = [
     price: 12,
     category: "Drinks",
     description: "Creamy coffee with fresh milk",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "https://images.pexels.com/photos/851555/pexels-photo-851555.jpeg?auto=compress&cs=tinysrgb&w=300",
     isPopular: true,
     rating: 4.5,
+    isAvailable: true,
   },
   {
     id: "cold-coffee",
@@ -52,8 +57,9 @@ const menuItems: MenuItem[] = [
     price: 15,
     category: "Drinks",
     description: "Refreshing iced coffee perfect for hot days",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "https://images.pexels.com/photos/1251175/pexels-photo-1251175.jpeg?auto=compress&cs=tinysrgb&w=300",
     rating: 4.3,
+    isAvailable: true,
   },
   {
     id: "milk-tea",
@@ -61,9 +67,10 @@ const menuItems: MenuItem[] = [
     price: 8,
     category: "Drinks",
     description: "Traditional Indian masala chai",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "https://images.pexels.com/photos/1638280/pexels-photo-1638280.jpeg?auto=compress&cs=tinysrgb&w=300",
     isPopular: true,
     rating: 4.7,
+    isAvailable: true,
   },
   {
     id: "lassi",
@@ -71,8 +78,9 @@ const menuItems: MenuItem[] = [
     price: 20,
     category: "Drinks",
     description: "Creamy yogurt-based traditional drink",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "https://images.pexels.com/photos/1435735/pexels-photo-1435735.jpeg?auto=compress&cs=tinysrgb&w=300",
     rating: 4.4,
+    isAvailable: true,
   },
 
   // Breakfast
@@ -82,8 +90,9 @@ const menuItems: MenuItem[] = [
     price: 25,
     category: "Breakfast",
     description: "Soft steamed rice cakes with sambhar & chutney",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "https://images.pexels.com/photos/5560763/pexels-photo-5560763.jpeg?auto=compress&cs=tinysrgb&w=300",
     rating: 4.6,
+    isAvailable: true,
   },
   {
     id: "masala-dosa",
@@ -91,9 +100,10 @@ const menuItems: MenuItem[] = [
     price: 35,
     category: "Breakfast",
     description: "Crispy crepe filled with spiced potato masala",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "https://images.pexels.com/photos/5560748/pexels-photo-5560748.jpeg?auto=compress&cs=tinysrgb&w=300",
     isPopular: true,
     rating: 4.8,
+    isAvailable: true,
   },
   {
     id: "samosa",
@@ -101,9 +111,10 @@ const menuItems: MenuItem[] = [
     price: 25,
     category: "Breakfast",
     description: "Golden crispy pastry with spiced potato filling",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "https://images.pexels.com/photos/14477797/pexels-photo-14477797.jpeg?auto=compress&cs=tinysrgb&w=300",
     isPopular: true,
     rating: 4.5,
+    isAvailable: true,
   },
   {
     id: "poha",
@@ -111,12 +122,13 @@ const menuItems: MenuItem[] = [
     price: 20,
     category: "Breakfast",
     description: "Flattened rice with aromatic spices & herbs",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "https://images.pexels.com/photos/8629141/pexels-photo-8629141.jpeg?auto=compress&cs=tinysrgb&w=300",
     variants: [
       { name: "Plain", price: 20 },
       { name: "With Chana", price: 25 },
     ],
     rating: 4.3,
+    isAvailable: true,
   },
   {
     id: "aloo-paratha",
@@ -124,8 +136,9 @@ const menuItems: MenuItem[] = [
     price: 40,
     category: "Breakfast",
     description: "Stuffed flatbread with spiced mashed potatoes",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "https://images.pexels.com/photos/5560748/pexels-photo-5560748.jpeg?auto=compress&cs=tinysrgb&w=300",
     rating: 4.6,
+    isAvailable: true,
   },
 
   // Thali & Snacks
@@ -135,9 +148,10 @@ const menuItems: MenuItem[] = [
     price: 60,
     category: "Thali & Snacks",
     description: "Complete meal: Dal, Rice, Roti, Sabji, Pickle, Papad",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=300",
     isPopular: true,
     rating: 4.7,
+    isAvailable: true,
   },
   {
     id: "special-thali",
@@ -145,8 +159,9 @@ const menuItems: MenuItem[] = [
     price: 99,
     category: "Thali & Snacks",
     description: "Premium thali with paneer curry & fresh salad",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=300",
     rating: 4.9,
+    isAvailable: true,
   },
   {
     id: "veg-maggi",
@@ -154,9 +169,10 @@ const menuItems: MenuItem[] = [
     price: 40,
     category: "Thali & Snacks",
     description: "Instant noodles loaded with fresh vegetables",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "https://images.pexels.com/photos/4518843/pexels-photo-4518843.jpeg?auto=compress&cs=tinysrgb&w=300",
     isPopular: true,
     rating: 4.4,
+    isAvailable: true,
   },
   {
     id: "chowmein",
@@ -164,8 +180,9 @@ const menuItems: MenuItem[] = [
     price: 60,
     category: "Thali & Snacks",
     description: "Stir-fried noodles with crunchy vegetables",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "https://images.pexels.com/photos/4518843/pexels-photo-4518843.jpeg?auto=compress&cs=tinysrgb&w=300",
     rating: 4.5,
+    isAvailable: true,
   },
 ]
 
@@ -174,14 +191,22 @@ export default function DidiKiRasoiWebsite() {
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [cart, setCart] = useState<CartItem[]>([])
   const [isCartOpen, setIsCartOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set())
 
-  const categories = ["All", ...Array.from(new Set(menuItems.map((item) => item.category)))]
+  const categories = useMemo(() => 
+    ["All", ...Array.from(new Set(menuItems.map((item) => item.category)))],
+    []
+  )
 
-  const filteredItems = menuItems.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === "All" || item.category === selectedCategory
-    return matchesSearch && matchesCategory
-  })
+  const filteredItems = useMemo(() => {
+    return menuItems.filter((item) => {
+      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           item.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesCategory = selectedCategory === "All" || item.category === selectedCategory
+      return matchesSearch && matchesCategory && item.isAvailable
+    })
+  }, [searchTerm, selectedCategory])
 
   const addToCart = (item: MenuItem, variant?: { name: string; price: number }) => {
     const existingItem = cart.find(
@@ -205,11 +230,20 @@ export default function DidiKiRasoiWebsite() {
       }
       setCart([...cart, newItem])
     }
+
+    toast({
+      title: "Added to cart",
+      description: `${item.name}${variant ? ` (${variant.name})` : ""} has been added to your cart.`,
+    })
   }
 
   const updateQuantity = (itemId: string, variantName: string | undefined, newQuantity: number) => {
     if (newQuantity === 0) {
       setCart(cart.filter((item) => !(item.id === itemId && item.selectedVariant?.name === variantName)))
+      toast({
+        title: "Removed from cart",
+        description: "Item has been removed from your cart.",
+      })
     } else {
       setCart(
         cart.map((item) =>
@@ -227,31 +261,76 @@ export default function DidiKiRasoiWebsite() {
     return cart.reduce((total, item) => total + item.quantity, 0)
   }
 
-  const handlePlaceOrder = () => {
-    if (cart.length === 0) return
+  const handlePlaceOrder = async () => {
+    if (cart.length === 0) {
+      toast({
+        title: "Cart is empty",
+        description: "Please add some items to your cart before placing an order.",
+        variant: "destructive",
+      })
+      return
+    }
 
-    // Create order summary
-    const orderSummary = cart
-      .map(
-        (item) =>
-          `${item.name}${item.selectedVariant ? ` (${item.selectedVariant.name})` : ""} x${item.quantity} - ₹${item.price * item.quantity}`,
-      )
-      .join("\n")
+    setIsLoading(true)
 
-    const totalAmount = getTotalPrice()
-    const phoneNumber = "7440683678"
+    try {
+      // Create order summary
+      const orderSummary = cart
+        .map(
+          (item) =>
+            `${item.name}${item.selectedVariant ? ` (${item.selectedVariant.name})` : ""} x${item.quantity} - ₹${item.price * item.quantity}`,
+        )
+        .join("\n")
 
-    // Create WhatsApp message
-    const message = `🍽️ *New Order from Didi ki Rasoi*\n\n${orderSummary}\n\n*Total: ₹${totalAmount}*\n\nPlease confirm my order. Thank you!`
+      const totalAmount = getTotalPrice()
+      const phoneNumber = "7440683678"
 
-    // Open WhatsApp
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
-    window.open(whatsappUrl, "_blank")
+      // Create WhatsApp message
+      const message = `🍽️ *New Order from Didi ki Rasoi*\n\n${orderSummary}\n\n*Total: ₹${totalAmount}*\n\nPlease confirm my order. Thank you!`
 
-    // Clear cart after order
-    setCart([])
-    setIsCartOpen(false)
+      // Open WhatsApp
+      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
+      window.open(whatsappUrl, "_blank")
+
+      // Clear cart after order
+      setCart([])
+      setIsCartOpen(false)
+
+      toast({
+        title: "Order placed successfully!",
+        description: "Your order has been sent via WhatsApp. We'll confirm it shortly.",
+      })
+    } catch (error) {
+      toast({
+        title: "Error placing order",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
+
+  const handleImageError = (itemId: string) => {
+    setImageErrors(prev => new Set(prev).add(itemId))
+  }
+
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem('didi-ki-rasoi-cart')
+    if (savedCart) {
+      try {
+        setCart(JSON.parse(savedCart))
+      } catch (error) {
+        console.error('Error loading cart from localStorage:', error)
+      }
+    }
+  }, [])
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('didi-ki-rasoi-cart', JSON.stringify(cart))
+  }, [cart])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
@@ -341,9 +420,17 @@ export default function DidiKiRasoiWebsite() {
                         </div>
                         <Button
                           onClick={handlePlaceOrder}
-                          className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold py-3 rounded-xl shadow-lg"
+                          disabled={isLoading}
+                          className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold py-3 rounded-xl shadow-lg disabled:opacity-50"
                         >
-                          Place Order via WhatsApp 📱
+                          {isLoading ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Placing Order...
+                            </>
+                          ) : (
+                            "Place Order via WhatsApp 📱"
+                          )}
                         </Button>
                       </div>
                     </>
@@ -355,28 +442,45 @@ export default function DidiKiRasoiWebsite() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-red-500/20"></div>
-        <div className="container mx-auto px-4 py-12 relative">
+      {/* Hero Section - Updated based on the image */}
+      <section className="relative overflow-hidden bg-gradient-to-r from-orange-100 via-amber-50 to-red-100">
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-red-500/10"></div>
+        <div className="container mx-auto px-4 py-16 relative">
           <div className="text-center max-w-4xl mx-auto">
-            <h2 className="text-4xl md:text-6xl font-bold text-gray-800 mb-4">Hungry? We've Got You Covered! 🍽️</h2>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Order delicious homestyle food from your classroom and skip the long queues. Fresh, tasty, and delivered
-              fast!
+            <h2 className="text-5xl md:text-7xl font-bold text-gray-800 mb-6 leading-tight">
+              Hungry? We've Got You 
+              <span className="block text-transparent bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text">
+                Covered! 🍽️
+              </span>
+            </h2>
+            <p className="text-xl md:text-2xl text-gray-700 mb-8 max-w-3xl mx-auto font-medium">
+              Order delicious homestyle food from your classroom and skip the long queues.
             </p>
-            <div className="flex flex-wrap justify-center gap-6 text-sm">
-              <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-md">
-                <Phone className="w-4 h-4 text-orange-500" />
-                <span className="font-semibold">7440683678</span>
+            <p className="text-lg text-gray-600 mb-10">
+              Fresh, tasty, and delivered fast!
+            </p>
+            
+            <div className="flex flex-wrap justify-center gap-4 md:gap-8">
+              <div className="flex items-center gap-3 bg-white/90 backdrop-blur-sm px-6 py-4 rounded-2xl shadow-lg border border-orange-200">
+                <Phone className="w-6 h-6 text-orange-500" />
+                <div className="text-left">
+                  <p className="text-sm text-gray-500 font-medium">Call Us</p>
+                  <p className="text-lg font-bold text-gray-800">7440683678</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-md">
-                <MapPin className="w-4 h-4 text-red-500" />
-                <span className="font-semibold">Building 4, CSVTU Newai</span>
+              <div className="flex items-center gap-3 bg-white/90 backdrop-blur-sm px-6 py-4 rounded-2xl shadow-lg border border-red-200">
+                <MapPin className="w-6 h-6 text-red-500" />
+                <div className="text-left">
+                  <p className="text-sm text-gray-500 font-medium">Location</p>
+                  <p className="text-lg font-bold text-gray-800">Building 4, CSVTU Newai</p>
+                </div>
               </div>
-              <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-md">
-                <Clock className="w-4 h-4 text-green-500" />
-                <span className="font-semibold">Fast Delivery</span>
+              <div className="flex items-center gap-3 bg-white/90 backdrop-blur-sm px-6 py-4 rounded-2xl shadow-lg border border-green-200">
+                <Clock className="w-6 h-6 text-green-500" />
+                <div className="text-left">
+                  <p className="text-sm text-gray-500 font-medium">Service</p>
+                  <p className="text-lg font-bold text-gray-800">Fast Delivery</p>
+                </div>
               </div>
             </div>
           </div>
@@ -423,73 +527,96 @@ export default function DidiKiRasoiWebsite() {
 
       {/* Menu Items */}
       <div className="container mx-auto px-4 pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredItems.map((item) => (
-            <Card
-              key={item.id}
-              className="group overflow-hidden hover:shadow-2xl transition-all duration-300 bg-white/90 backdrop-blur-sm border-orange-100 hover:border-orange-200 hover:-translate-y-1"
-            >
-              <div className="relative aspect-[4/3] overflow-hidden">
-                <img
-                  src={item.image || "/placeholder.svg"}
-                  alt={item.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-                {item.isPopular && (
-                  <Badge className="absolute top-3 left-3 bg-gradient-to-r from-yellow-400 to-orange-400 text-white font-semibold">
-                    🔥 Popular
-                  </Badge>
-                )}
-                {item.rating && (
-                  <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1">
-                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                    <span className="text-xs font-semibold">{item.rating}</span>
-                  </div>
-                )}
-              </div>
-              <CardContent className="p-5">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-bold text-lg text-gray-800 group-hover:text-orange-600 transition-colors">
-                    {item.name}
-                  </h3>
-                  <Badge
-                    variant="secondary"
-                    className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 font-bold text-sm"
-                  >
-                    ₹{item.price}
-                  </Badge>
+        {filteredItems.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-2xl font-bold text-gray-700 mb-2">No items found</h3>
+            <p className="text-gray-500">Try adjusting your search or filter criteria</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredItems.map((item) => (
+              <Card
+                key={item.id}
+                className="group overflow-hidden hover:shadow-2xl transition-all duration-300 bg-white/90 backdrop-blur-sm border-orange-100 hover:border-orange-200 hover:-translate-y-1"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  {!imageErrors.has(item.id) ? (
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      onError={() => handleImageError(item.id)}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
+                      <Utensils className="w-16 h-16 text-orange-300" />
+                    </div>
+                  )}
+                  {item.isPopular && (
+                    <Badge className="absolute top-3 left-3 bg-gradient-to-r from-yellow-400 to-orange-400 text-white font-semibold">
+                      🔥 Popular
+                    </Badge>
+                  )}
+                  {item.rating && (
+                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1">
+                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                      <span className="text-xs font-semibold">{item.rating}</span>
+                    </div>
+                  )}
+                  {!item.isAvailable && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">Out of Stock</span>
+                    </div>
+                  )}
                 </div>
-                {item.description && <p className="text-gray-600 text-sm mb-4 leading-relaxed">{item.description}</p>}
-
-                {item.variants ? (
-                  <div className="space-y-2">
-                    {item.variants.map((variant) => (
-                      <div key={variant.name} className="flex justify-between items-center p-2 bg-orange-50 rounded-lg">
-                        <span className="text-sm font-medium text-gray-700">
-                          {variant.name} - ₹{variant.price}
-                        </span>
-                        <Button
-                          size="sm"
-                          onClick={() => addToCart(item, variant)}
-                          className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-full px-4"
-                        >
-                          Add
-                        </Button>
-                      </div>
-                    ))}
+                <CardContent className="p-5">
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="font-bold text-lg text-gray-800 group-hover:text-orange-600 transition-colors">
+                      {item.name}
+                    </h3>
+                    <Badge
+                      variant="secondary"
+                      className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 font-bold text-sm"
+                    >
+                      ₹{item.price}
+                    </Badge>
                   </div>
-                ) : (
-                  <Button
-                    onClick={() => addToCart(item)}
-                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all"
-                  >
-                    Add to Cart
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  {item.description && <p className="text-gray-600 text-sm mb-4 leading-relaxed">{item.description}</p>}
+
+                  {item.variants ? (
+                    <div className="space-y-2">
+                      {item.variants.map((variant) => (
+                        <div key={variant.name} className="flex justify-between items-center p-2 bg-orange-50 rounded-lg">
+                          <span className="text-sm font-medium text-gray-700">
+                            {variant.name} - ₹{variant.price}
+                          </span>
+                          <Button
+                            size="sm"
+                            onClick={() => addToCart(item, variant)}
+                            disabled={!item.isAvailable}
+                            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white rounded-full px-4 disabled:opacity-50"
+                          >
+                            Add
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={() => addToCart(item)}
+                      disabled={!item.isAvailable}
+                      className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all disabled:opacity-50"
+                    >
+                      {item.isAvailable ? "Add to Cart" : "Out of Stock"}
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Footer */}
@@ -534,6 +661,8 @@ export default function DidiKiRasoiWebsite() {
           </div>
         </div>
       </footer>
+
+      <Toaster />
     </div>
   )
 }
